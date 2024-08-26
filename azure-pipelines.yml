@@ -1,0 +1,48 @@
+# Python package
+# Create and test a Python package on multiple Python versions.
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+strategy:
+  matrix:
+    Python37:
+      python.version: '3.7'
+
+variables:
+  - name: AZURE_SUBSCRIPTION_ID
+    value: a2b28c85-1948-4263-90ca-bade2bac4df4
+  - name: AZURE_RESOURCE_GROUP
+    value: kml_rg_main-6d955372e56c4079
+  - name: AZURE_VM_NAME
+    value: vidushi-vm
+schedules:
+  - cron: "0 9 * * *"  # 9:00 AM
+    displayName: Start VM
+    branches:
+      include:
+        - main
+    always: true
+
+  - cron: "0 12 * * *"  # 9:00 PM
+    displayName: Stop VM
+    branches:
+      include:
+        - main
+    always: true
+
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.x'
+      addToPath: true
+
+  - script: |
+      pip install azure-identity azure-mgmt-compute
+      python vm.py
+    displayName: 'Run VM Management Script'
